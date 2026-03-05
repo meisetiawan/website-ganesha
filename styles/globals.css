@@ -1,0 +1,19 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  @apply bg-slate-950 text-slate-100 antialiased;
+}
+
+.container-main {
+  @apply mx-auto w-full max-w-7xl px-4 md:px-8;
+}
+
+.card-surface {
+  @apply rounded-2xl border border-white/10 bg-white/5 backdrop-blur-md;
+}
