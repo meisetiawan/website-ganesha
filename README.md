@@ -1,36 +1,48 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Website SMA 1 Purbalingga
 
-## Getting Started
+Website landing page untuk SMA 1 Purbalingga dibuat menggunakan Next.js, Tailwind CSS, dan TypeScript.
 
-First, run the development server:
+## Deskripsi
+
+Website ini adalah halaman landing untuk SMA 1 Purbalingga, menampilkan informasi tentang sekolah, program unggulan, dan informasi kontak.
+
+## Teknologi yang Digunakan
+
+- **Next.js** - React framework untuk production
+- **Tailwind CSS** - Utility-first CSS framework
+- **TypeScript** - Typed JavaScript
+- **ESLint** - Linting tool
+
+## Memulai
+
+1. Install dependencies:
+
+```bash
+npm install
+```
+
+2. Jalankan development server:
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Buka [http://localhost:3000](http://localhost:3000) di browser untuk melihat hasilnya.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Build untuk Production
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npm run build
+npm start
+```
 
-## Learn More
+## Struktur Proyek
 
-To learn more about Next.js, take a look at the following resources:
+- `app/` - Next.js App Router
+- `app/page.tsx` - Halaman utama landing page
+- `app/layout.tsx` - Layout aplikasi
+- `app/globals.css` - Global styles dengan Tailwind
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## Deploy
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Website ini dapat di-deploy ke Vercel, Netlify, atau platform hosting lainnya yang mendukung Next.js.
