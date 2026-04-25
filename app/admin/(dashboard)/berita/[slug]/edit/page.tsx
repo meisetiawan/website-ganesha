@@ -58,6 +58,7 @@ export default function EditNewsPage({ params }: { params: Promise<{ slug: strin
       console.error("[v0] Error fetching news:", error);
       setError("Gagal mengambil data berita");
       setLoading(false);
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -71,6 +72,7 @@ export default function EditNewsPage({ params }: { params: Promise<{ slug: strin
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
