@@ -14,34 +14,6 @@ import { ArrowLeft, Save } from "lucide-react";
 import Link from "next/link";
 import type { News } from "@/lib/types";
 
-// Demo data - sama dengan di API
-const DEMO_NEWS: Record<string, { title: string; content: string; excerpt: string; featured_image: string; category: string; status: string }> = {
-  "siswa-sman-1-purbalingga-raih-medali-emas": {
-    title: "Siswa SMAN 1 Purbalingga Raih Medali Emas Olimpiade Sains",
-    content: "Siswa SMAN 1 Purbalingga berhasil meraih medali emas dalam ajang Olimpiade Sains Nasional (OSN) tahun 2024. Prestasi ini merupakan hasil kerja keras dan dedikasi tinggi dari siswa dan guru pembimbing.\n\nOlimpiade yang diselenggarakan di Jakarta ini diikuti oleh ribuan peserta dari seluruh Indonesia. Keberhasilan ini menunjukkan kualitas pendidikan di SMAN 1 Purbalingga yang terus meningkat dari tahun ke tahun.",
-    excerpt: "Prestasi membanggakan diraih oleh siswa SMAN 1 Purbalingga dalam ajang Olimpiade Sains Nasional.",
-    featured_image: "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?w=800&h=600&fit=crop",
-    category: "prestasi",
-    status: "published",
-  },
-  "pembukaan-pendaftaran-siswa-baru-2024": {
-    title: "Pembukaan Pendaftaran Siswa Baru Tahun Ajaran 2024/2025",
-    content: "SMAN 1 Purbalingga dengan bangga mengumumkan pembukaan pendaftaran siswa baru untuk tahun ajaran 2024/2025. Pendaftaran dibuka mulai tanggal 1 Februari hingga 31 Maret 2024.\n\nCalon siswa dapat mendaftar secara online melalui website resmi sekolah atau datang langsung ke sekolah pada jam kerja. Persyaratan dan informasi lebih lanjut dapat dilihat di halaman pendaftaran.",
-    excerpt: "SMAN 1 Purbalingga membuka pendaftaran siswa baru untuk tahun ajaran 2024/2025.",
-    featured_image: "https://images.unsplash.com/photo-1427504494785-3a9ca7044f45?w=800&h=600&fit=crop",
-    category: "pengumuman",
-    status: "published",
-  },
-  "kegiatan-pentas-seni-budaya-2024": {
-    title: "Kegiatan Pentas Seni dan Budaya 2024",
-    content: "Dalam rangka memperingati hari jadi sekolah, SMAN 1 Purbalingga akan mengadakan Pentas Seni dan Budaya 2024. Acara ini akan menampilkan berbagai pertunjukan seni dari siswa-siswi berbakat.\n\nPentas seni ini bertujuan untuk mengembangkan kreativitas dan bakat seni siswa serta melestarikan budaya Indonesia.",
-    excerpt: "SMAN 1 Purbalingga akan mengadakan pentas seni dan budaya tahunan.",
-    featured_image: "https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=800&h=600&fit=crop",
-    category: "kegiatan",
-    status: "published",
-  },
-};
-
 export default function EditNewsPage({ params }: { params: Promise<{ slug: string }> }) {
   const { slug } = use(params);
   const router = useRouter();
@@ -72,35 +44,20 @@ export default function EditNewsPage({ params }: { params: Promise<{ slug: strin
         if (newsData && newsData.title) {
           setFormData({
             title: newsData.title,
-            content: newsData.content,
+            content: newsData.content || "",
             excerpt: newsData.excerpt || "",
-            featured_image: newsData.featured_image || "",
-            category: newsData.category,
-            status: newsData.status,
+            featured_image: newsData.image_url || newsData.featured_image || "",
+            category: newsData.category || "pengumuman",
+            status: newsData.status || "draft",
           });
           setLoading(false);
           return;
         }
       }
-    } catch {
-      // Continue to fallback
-    }
-
-    // Fallback to demo data
-    const demoData = DEMO_NEWS[slug];
-    if (demoData) {
-      setFormData({
-        title: demoData.title,
-        content: demoData.content,
-        excerpt: demoData.excerpt,
-        featured_image: demoData.featured_image,
-        category: demoData.category,
-        status: demoData.status,
-      });
-    } else {
-      setError("Berita tidak ditemukan");
-    }
-    setLoading(false);
+    } catch (error) {
+      console.error("[v0] Error fetching news:", error);
+      setError("Gagal mengambil data berita");
+      setLoading(false);
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -113,7 +70,6 @@ export default function EditNewsPage({ params }: { params: Promise<{ slug: strin
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`,
         },
         body: JSON.stringify(formData),
       });

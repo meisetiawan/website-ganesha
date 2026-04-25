@@ -124,7 +124,7 @@ export default function EditStaffPage() {
               role: staffData.role || "teacher",
               position: staffData.position || "",
               department: staffData.department || "",
-              photo_url: staffData.photo_url || "",
+              photo_url: staffData.image_url || staffData.photo_url || "",
               email: staffData.email || "",
               phone: staffData.phone || "",
               bio: staffData.bio || "",
@@ -168,19 +168,23 @@ export default function EditStaffPage() {
       const res = await fetch(`/api/staff/${staffId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(formData),
+        credentials: "include",
+        body: JSON.stringify({
+          ...formData,
+          image_url: formData.photo_url, // Map photo_url to image_url for database
+        }),
       });
 
       if (res.ok) {
         toast.success("Data staff berhasil diperbarui");
         router.push("/admin/staff");
       } else {
-        toast.error("Gagal memperbarui data staff");
+        const data = await res.json();
+        toast.error(data.error || "Gagal memperbarui data staff");
       }
-    } catch {
-      // Demo mode
-      toast.success("Data staff berhasil diperbarui (demo mode)");
-      router.push("/admin/staff");
+    } catch (error) {
+      console.error("[v0] Error updating staff:", error);
+      toast.error("Terjadi kesalahan saat menyimpan");
     } finally {
       setSaving(false);
     }

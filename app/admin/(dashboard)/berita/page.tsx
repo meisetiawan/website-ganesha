@@ -99,7 +99,14 @@ export default function AdminBeritaPage() {
     setNews(prev => prev.filter(item => item.slug !== slug));
     
     try {
-      await fetch(`/api/news/${slug}`, { method: "DELETE" });
+      const res = await fetch(`/api/news/${slug}`, { 
+        method: "DELETE",
+        credentials: "include",
+      });
+      if (!res.ok) {
+        // Revert if failed
+        fetchNews();
+      }
     } catch {
       // Revert if failed
       fetchNews();

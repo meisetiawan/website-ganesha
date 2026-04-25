@@ -48,12 +48,17 @@ export async function PUT(
   try {
     const { slug } = await params;
     const body = await request.json();
-    const { title, excerpt, content, featured_image, category, status } = body;
+    const { title, excerpt, content, featured_image, image_url, status } = body;
 
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '') || request.cookies.get('auth_token')?.value;
     
+    console.log('[v0] PUT news - token exists:', !!token);
+    console.log('[v0] PUT news - auth header:', authHeader ? 'present' : 'missing');
+    console.log('[v0] PUT news - cookie token:', request.cookies.get('auth_token')?.value ? 'present' : 'missing');
+    
     if (!token || !verifyToken(token)) {
+      console.log('[v0] PUT news - verifyToken result:', token ? verifyToken(token) : 'no token');
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
@@ -61,6 +66,8 @@ export async function PUT(
     }
 
     const isPublished = status === 'published' ? 1 : (status === 'draft' ? 0 : null);
+    // Accept both featured_image and image_url
+    const imageUrl = image_url || featured_image;
     
     const result = await query<ResultSetHeader>(
       `UPDATE news SET 
@@ -68,11 +75,10 @@ export async function PUT(
         excerpt = COALESCE(?, excerpt),
         content = COALESCE(?, content),
         image_url = COALESCE(?, image_url),
-        category = COALESCE(?, category),
         is_published = COALESCE(?, is_published),
         updated_at = NOW()
        WHERE slug = ?`,
-      [title, excerpt, content, featured_image, category, isPublished, slug]
+      [title, excerpt, content, imageUrl, isPublished, slug]
     );
 
     if (result.affectedRows > 0) {
