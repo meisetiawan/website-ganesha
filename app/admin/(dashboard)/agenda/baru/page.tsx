@@ -1,7 +1,7 @@
 "use client";
 
-import { useState, useEffect } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useState } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { ArrowLeft, Save, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -18,12 +18,8 @@ import {
 import { FieldGroup, Field, FieldLabel } from "@/components/ui/field";
 import { toast } from "sonner";
 
-export default function EditAgendaPage() {
-  const params = useParams();
+export default function CreateAgendaPage() {
   const router = useRouter();
-  const slug = params.slug as string;
-
-  const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     title: "",
@@ -35,74 +31,32 @@ export default function EditAgendaPage() {
     status: "draft",
   });
 
-  useEffect(() => {
-    const fetchEvent = async () => {
-      try {
-        // Try API first with admin flag
-        const res = await fetch(`/api/events/${slug}?admin=true`);
-        if (res.ok) {
-          const data = await res.json();
-          // Handle both direct data and wrapped response
-          const eventData = data.data || data;
-          if (eventData && eventData.title) {
-            const startDate = eventData.start_date ? new Date(eventData.start_date).toISOString().split("T")[0] : "";
-            const endDate = eventData.end_date ? new Date(eventData.end_date).toISOString().split("T")[0] : "";
-            setFormData({
-              title: eventData.title || "",
-              description: eventData.description || "",
-              location: eventData.location || "",
-              image_url: eventData.image_url || "",
-              start_date: startDate,
-              end_date: endDate,
-              status: eventData.status || "draft",
-            });
-            setLoading(false);
-            return;
-          }
-        }
-      } catch (error) {
-        console.error("Error fetching event:", error);
-        toast.error("Gagal mengambil data agenda");
-        setLoading(false);
-      }
-    };
-
-    fetchEvent();
-  }, [slug]);
-
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setSaving(true);
 
     try {
-      const res = await fetch(`/api/events/${slug}`, {
-        method: "PUT",
+      const res = await fetch("/api/events", {
+        method: "POST",
         headers: { "Content-Type": "application/json" },
+        credentials: "include",
         body: JSON.stringify(formData),
       });
 
       if (res.ok) {
-        toast.success("Agenda berhasil diperbarui");
+        toast.success("Agenda berhasil ditambahkan");
         router.push("/admin/agenda");
       } else {
-        toast.error("Gagal memperbarui agenda");
+        const data = await res.json();
+        toast.error(data.error || "Gagal menambahkan agenda");
       }
-    } catch {
-      // Demo mode
-      toast.success("Agenda berhasil diperbarui (demo mode)");
-      router.push("/admin/agenda");
+    } catch (error) {
+      console.error("Error creating agenda:", error);
+      toast.error("Terjadi kesalahan saat menyimpan");
     } finally {
       setSaving(false);
     }
   };
-
-  if (loading) {
-    return (
-      <div className="flex items-center justify-center min-h-[400px]">
-        <Loader2 className="h-8 w-8 animate-spin text-primary" />
-      </div>
-    );
-  }
 
   return (
     <div className="space-y-6">
@@ -115,10 +69,10 @@ export default function EditAgendaPage() {
         </Button>
         <div>
           <h1 className="text-3xl font-bold tracking-tight text-foreground">
-            Edit Agenda
+            Tambah Agenda
           </h1>
           <p className="text-muted-foreground mt-1">
-            Perbarui informasi agenda kegiatan
+            Buat agenda kegiatan baru
           </p>
         </div>
       </div>

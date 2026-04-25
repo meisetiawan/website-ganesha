@@ -45,7 +45,7 @@ export async function PUT(
   try {
     const { slug } = await params;
     const body = await request.json();
-    const { title, description, location, start_date, end_date, status } = body;
+    const { title, description, location, image_url, start_date, end_date, status } = body;
 
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '') || request.cookies.get('auth_token')?.value;
@@ -64,12 +64,13 @@ export async function PUT(
         title = COALESCE(?, title),
         description = COALESCE(?, description),
         location = COALESCE(?, location),
+        image_url = COALESCE(?, image_url),
         start_date = COALESCE(?, start_date),
         end_date = COALESCE(?, end_date),
         is_published = COALESCE(?, is_published),
         updated_at = NOW()
        WHERE slug = ?`,
-      [title, description, location, start_date, end_date, isPublished, slug]
+      [title, description, location, image_url, start_date, end_date, isPublished, slug]
     );
 
     if (result.affectedRows > 0) {

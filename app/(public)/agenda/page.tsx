@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
-import { CalendarDays, Clock, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
+import { CalendarDays, MapPin, ChevronLeft, ChevronRight } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -11,12 +11,11 @@ interface EventItem {
   id: number;
   title: string;
   slug: string;
-  description: string;
-  location: string;
+  description?: string;
+  location?: string;
+  image_url?: string;
   start_date: string;
   end_date: string;
-  start_time: string;
-  end_time: string;
   status: string;
 }
 
@@ -26,10 +25,6 @@ function formatDate(dateString: string) {
     month: "long",
     year: "numeric",
   });
-}
-
-function formatTime(startTime: string, endTime: string) {
-  return `${startTime} - ${endTime} WIB`;
 }
 
 function getEventStatus(startDate: string, endDate: string) {
@@ -55,14 +50,18 @@ export default function AgendaPage() {
     async function fetchEvents() {
       try {
         const res = await fetch("/api/events?limit=20");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.data?.events && Array.isArray(data.data.events)) {
-            setEvents(data.data.events);
-          }
+        const data = await res.json();
+        
+        if (data.success && Array.isArray(data.data)) {
+          setEvents(data.data);
+        } else if (data.data?.events && Array.isArray(data.data.events)) {
+          setEvents(data.data.events);
+        } else {
+          setEvents([]);
         }
       } catch (error) {
         console.error("Error fetching events:", error);
+        setEvents([]);
       } finally {
         setLoading(false);
       }
@@ -199,14 +198,12 @@ export default function AgendaPage() {
                                 <CalendarDays className="h-4 w-4" />
                                 <span>{formatDate(event.start_date)}</span>
                               </div>
-                              <div className="flex items-center gap-1">
-                                <Clock className="h-4 w-4" />
-                                <span>{formatTime(event.start_time, event.end_time)}</span>
-                              </div>
-                              <div className="flex items-center gap-1">
-                                <MapPin className="h-4 w-4" />
-                                <span>{event.location}</span>
-                              </div>
+                              {event.location && (
+                                <div className="flex items-center gap-1">
+                                  <MapPin className="h-4 w-4" />
+                                  <span>{event.location}</span>
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
