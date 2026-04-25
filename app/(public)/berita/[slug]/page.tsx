@@ -4,7 +4,7 @@ import { useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import Image from "next/image";
-import { Calendar, Eye, ArrowLeft, Share2, User } from "lucide-react";
+import { Calendar, ArrowLeft, Share2, User } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 
@@ -12,14 +12,13 @@ interface NewsDetail {
   id: number;
   title: string;
   slug: string;
-  excerpt: string;
+  excerpt?: string;
   content: string;
   featured_image?: string;
   image_url?: string;
-  category: string;
-  author: string;
+  category?: string;
+  author?: string;
   published_at: string;
-  view_count: number;
 }
 
 function formatDate(dateString: string) {
@@ -52,20 +51,17 @@ export default function NewsDetailPage() {
     async function fetchNews() {
       try {
         const res = await fetch(`/api/news/${slug}`);
-        if (res.ok) {
-          const data = await res.json();
-          // API returns the news object directly, not wrapped in data
-          if (data && !data.error && data.id) {
-            setNews(data);
-          } else if (data.success === false) {
-            setError("Berita tidak ditemukan");
-          } else {
-            setError("Berita tidak ditemukan");
-          }
+        const data = await res.json();
+        
+        // API returns the news object directly when found
+        if (data && data.id && data.title) {
+          setNews(data);
+        } else if (data.success === false || data.error) {
+          setError(data.error || "Berita tidak ditemukan");
         } else {
           setError("Berita tidak ditemukan");
         }
-      } catch (err) {
+      } catch {
         setError("Gagal memuat berita");
       } finally {
         setLoading(false);
@@ -134,9 +130,11 @@ export default function NewsDetailPage() {
 
         {/* Header */}
         <header className="mb-8">
-          <Badge className={getCategoryColor(news.category)}>
-            {news.category}
-          </Badge>
+          {news.category && (
+            <Badge className={getCategoryColor(news.category)}>
+              {news.category}
+            </Badge>
+          )}
           <h1 className="mt-4 text-3xl font-bold tracking-tight text-foreground sm:text-4xl lg:text-5xl text-balance">
             {news.title}
           </h1>
@@ -153,10 +151,6 @@ export default function NewsDetailPage() {
             <span className="flex items-center gap-2">
               <Calendar className="h-4 w-4" />
               {formatDate(news.published_at)}
-            </span>
-            <span className="flex items-center gap-2">
-              <Eye className="h-4 w-4" />
-              {(news.view_count || 0).toLocaleString()} pembaca
             </span>
           </div>
         </header>

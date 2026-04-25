@@ -15,15 +15,11 @@ export async function GET(
     const isAdmin = url.searchParams.get('admin') === 'true';
     
     const statusCondition = isAdmin ? '' : 'AND is_published = 1';
-    const news = await query<RowDataPacket[]>(
-      `SELECT *, CASE WHEN is_published = 1 THEN 'published' ELSE 'draft' END as status FROM news WHERE slug = ? ${statusCondition}`,
-      [slug]
-    );
+    const sql = `SELECT *, CASE WHEN is_published = 1 THEN 'published' ELSE 'draft' END as status FROM news WHERE slug = '${slug.replace(/'/g, "''")}' ${statusCondition}`;
+    
+    const news = await query<RowDataPacket[]>(sql);
 
     if (news && news.length > 0) {
-      if (!isAdmin) {
-        await query(`UPDATE news SET view_count = view_count + 1 WHERE slug = ?`, [slug]);
-      }
       return NextResponse.json(news[0] as unknown as News);
     }
 
@@ -53,12 +49,7 @@ export async function PUT(
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '') || request.cookies.get('auth_token')?.value;
     
-    console.log('[v0] PUT news - token exists:', !!token);
-    console.log('[v0] PUT news - auth header:', authHeader ? 'present' : 'missing');
-    console.log('[v0] PUT news - cookie token:', request.cookies.get('auth_token')?.value ? 'present' : 'missing');
-    
     if (!token || !verifyToken(token)) {
-      console.log('[v0] PUT news - verifyToken result:', token ? verifyToken(token) : 'no token');
       return NextResponse.json(
         { success: false, error: 'Unauthorized' },
         { status: 401 }
