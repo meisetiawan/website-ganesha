@@ -45,7 +45,7 @@ export async function PUT(
   try {
     const { id } = await params;
     const body = await request.json();
-    const { name, nip, role, position, department, photo_url, email, phone, bio, is_active } = body;
+    const { name, position, department, image_url, photo_url, email, phone, bio, is_active } = body;
 
     const authHeader = request.headers.get('authorization');
     const token = authHeader?.replace('Bearer ', '') || request.cookies.get('auth_token')?.value;
@@ -56,6 +56,9 @@ export async function PUT(
         { status: 401 }
       );
     }
+
+    // Accept both image_url and photo_url
+    const finalImageUrl = image_url || photo_url;
 
     const result = await query<ResultSetHeader>(
       `UPDATE staff SET 
@@ -69,7 +72,7 @@ export async function PUT(
         is_active = COALESCE(?, is_active),
         updated_at = NOW()
        WHERE id = ?`,
-      [name, position, department, photo_url, email, phone, bio, is_active !== undefined ? (is_active ? 1 : 0) : null, id]
+      [name, position, department, finalImageUrl, email, phone, bio, is_active !== undefined ? (is_active ? 1 : 0) : null, id]
     );
 
     if (result.affectedRows > 0) {

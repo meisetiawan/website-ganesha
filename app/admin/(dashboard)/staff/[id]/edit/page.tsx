@@ -20,73 +20,19 @@ import { FieldGroup, Field, FieldLabel } from "@/components/ui/field";
 import { Switch } from "@/components/ui/switch";
 import { toast } from "sonner";
 
-// Mock data for demo
-const mockStaff: Record<string, {
-  id: number;
-  name: string;
-  nip: string;
-  role: string;
-  position: string;
-  department: string;
-  photo_url: string;
-  email: string;
-  phone: string;
-  bio: string;
-  is_active: boolean;
-}> = {
-  "1": {
-    id: 1,
-    name: "Drs. H. Sutrisno, M.Pd.",
-    nip: "196512151990031004",
-    role: "principal",
-    position: "Kepala Sekolah",
-    department: "Manajemen",
-    photo_url: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop",
-    email: "sutrisno@sman1purbalingga.sch.id",
-    phone: "081234567890",
-    bio: "Kepala sekolah dengan pengalaman lebih dari 25 tahun dalam dunia pendidikan.",
-    is_active: true,
-  },
-  "2": {
-    id: 2,
-    name: "Dr. Heru Pramono, M.Sc.",
-    nip: "197003201995121001",
-    role: "teacher",
-    position: "Guru Fisika",
-    department: "MIPA",
-    photo_url: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop",
-    email: "heru@sman1purbalingga.sch.id",
-    phone: "081234567891",
-    bio: "Guru fisika dengan spesialisasi mekanika kuantum.",
-    is_active: true,
-  },
-  "3": {
-    id: 3,
-    name: "Hj. Siti Aminah, S.Pd., M.M.",
-    nip: "197105151998022002",
-    role: "teacher",
-    position: "Guru Matematika",
-    department: "MIPA",
-    photo_url: "https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop",
-    email: "siti@sman1purbalingga.sch.id",
-    phone: "081234567892",
-    bio: "Guru matematika berpengalaman dengan berbagai prestasi olimpiade.",
-    is_active: true,
-  },
-  "4": {
-    id: 4,
-    name: "Rini Wulandari",
-    nip: "198506102010012003",
-    role: "staff",
-    position: "Kepala Tata Usaha",
-    department: "Administrasi",
-    photo_url: "https://images.unsplash.com/photo-1573497019940-1c28c88b4f3e?w=100&h=100&fit=crop",
-    email: "rini@sman1purbalingga.sch.id",
-    phone: "081234567893",
-    bio: "Kepala TU yang bertanggung jawab atas administrasi sekolah.",
-    is_active: true,
-  },
-};
+// Helper function to parse department into category and bidang
+function parseDepartment(department: string): { category: string; bidang: string } {
+  if (!department) return { category: "Staff", bidang: "" };
+  
+  // Check if it's in "Category - Bidang" format
+  if (department.includes(" - ")) {
+    const [category, bidang] = department.split(" - ");
+    return { category, bidang };
+  }
+  
+  // Otherwise it's just the category
+  return { category: department, bidang: "" };
+}
 
 export default function EditStaffPage() {
   const params = useParams();
@@ -97,10 +43,9 @@ export default function EditStaffPage() {
   const [saving, setSaving] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
-    nip: "",
-    role: "teacher",
     position: "",
-    department: "",
+    category: "Guru", // Pimpinan, Guru, Staff
+    bidang: "", // Mata pelajaran atau bagian
     photo_url: "",
     email: "",
     phone: "",
@@ -111,50 +56,31 @@ export default function EditStaffPage() {
   useEffect(() => {
     const fetchStaff = async () => {
       try {
-        // Try API first with admin flag
         const res = await fetch(`/api/staff/${staffId}?admin=true`);
         if (res.ok) {
           const data = await res.json();
-          // Handle both direct data and wrapped response
           const staffData = data.data || data;
           if (staffData && staffData.name) {
+            const { category, bidang } = parseDepartment(staffData.department || "");
             setFormData({
               name: staffData.name || "",
-              nip: staffData.nip || "",
-              role: staffData.role || "teacher",
               position: staffData.position || "",
-              department: staffData.department || "",
+              category: category,
+              bidang: bidang,
               photo_url: staffData.image_url || staffData.photo_url || "",
               email: staffData.email || "",
               phone: staffData.phone || "",
               bio: staffData.bio || "",
               is_active: staffData.is_active ?? true,
             });
-            setLoading(false);
-            return;
           }
         }
-      } catch {
-        // Fallback to mock data
+      } catch (error) {
+        console.error("Error fetching staff:", error);
+        toast.error("Gagal mengambil data staff");
+      } finally {
+        setLoading(false);
       }
-
-      // Use mock data
-      const mockData = mockStaff[staffId];
-      if (mockData) {
-        setFormData({
-          name: mockData.name,
-          nip: mockData.nip,
-          role: mockData.role,
-          position: mockData.position,
-          department: mockData.department,
-          photo_url: mockData.photo_url,
-          email: mockData.email,
-          phone: mockData.phone,
-          bio: mockData.bio,
-          is_active: mockData.is_active,
-        });
-      }
-      setLoading(false);
     };
 
     fetchStaff();
@@ -165,13 +91,24 @@ export default function EditStaffPage() {
     setSaving(true);
 
     try {
+      // Build department field from category and bidang
+      const department = formData.bidang 
+        ? `${formData.category} - ${formData.bidang}` 
+        : formData.category;
+
       const res = await fetch(`/api/staff/${staffId}`, {
         method: "PUT",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
         body: JSON.stringify({
-          ...formData,
-          image_url: formData.photo_url, // Map photo_url to image_url for database
+          name: formData.name,
+          position: formData.position,
+          department: department,
+          image_url: formData.photo_url,
+          email: formData.email,
+          phone: formData.phone,
+          bio: formData.bio,
+          is_active: formData.is_active,
         }),
       });
 
@@ -242,14 +179,15 @@ export default function EditStaffPage() {
                   </Field>
 
                   <Field>
-                    <FieldLabel htmlFor="nip">NIP</FieldLabel>
+                    <FieldLabel htmlFor="position">Jabatan</FieldLabel>
                     <Input
-                      id="nip"
-                      value={formData.nip}
+                      id="position"
+                      value={formData.position}
                       onChange={(e) =>
-                        setFormData({ ...formData, nip: e.target.value })
+                        setFormData({ ...formData, position: e.target.value })
                       }
-                      placeholder="Masukkan NIP"
+                      placeholder="Contoh: Kepala Sekolah, Guru Matematika, Tata Usaha"
+                      required
                     />
                   </Field>
 
@@ -298,56 +236,48 @@ export default function EditStaffPage() {
 
             <Card className="glass">
               <CardHeader>
-                <CardTitle>Informasi Jabatan</CardTitle>
+                <CardTitle>Kategori</CardTitle>
               </CardHeader>
               <CardContent>
                 <FieldGroup>
                   <div className="grid gap-4 sm:grid-cols-2">
                     <Field>
-                      <FieldLabel htmlFor="role">Kategori</FieldLabel>
+                      <FieldLabel htmlFor="category">Kategori</FieldLabel>
                       <Select
-                        value={formData.role}
+                        value={formData.category}
                         onValueChange={(value) =>
-                          setFormData({ ...formData, role: value })
+                          setFormData({ ...formData, category: value })
                         }
                       >
-                        <SelectTrigger id="role">
+                        <SelectTrigger id="category">
                           <SelectValue placeholder="Pilih kategori" />
                         </SelectTrigger>
                         <SelectContent>
-                          <SelectItem value="principal">Kepala Sekolah</SelectItem>
-                          <SelectItem value="vice_principal">Wakil Kepala Sekolah</SelectItem>
-                          <SelectItem value="teacher">Guru</SelectItem>
-                          <SelectItem value="staff">Staff</SelectItem>
+                          <SelectItem value="Pimpinan">Pimpinan (Kepala Sekolah, Wakil Kepala)</SelectItem>
+                          <SelectItem value="Guru">Guru</SelectItem>
+                          <SelectItem value="Staff">Staff / Tenaga Kependidikan</SelectItem>
                         </SelectContent>
                       </Select>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Kategori menentukan pengelompokan di halaman website
+                      </p>
                     </Field>
 
                     <Field>
-                      <FieldLabel htmlFor="department">Departemen</FieldLabel>
+                      <FieldLabel htmlFor="bidang">Bidang/Mata Pelajaran</FieldLabel>
                       <Input
-                        id="department"
-                        value={formData.department}
+                        id="bidang"
+                        value={formData.bidang}
                         onChange={(e) =>
-                          setFormData({ ...formData, department: e.target.value })
+                          setFormData({ ...formData, bidang: e.target.value })
                         }
-                        placeholder="contoh: MIPA, Bahasa, Administrasi"
+                        placeholder="Contoh: Matematika, Fisika, Administrasi"
                       />
+                      <p className="text-xs text-muted-foreground mt-1">
+                        Untuk guru: mata pelajaran. Untuk staff: bagian/unit kerja.
+                      </p>
                     </Field>
                   </div>
-
-                  <Field>
-                    <FieldLabel htmlFor="position">Jabatan</FieldLabel>
-                    <Input
-                      id="position"
-                      value={formData.position}
-                      onChange={(e) =>
-                        setFormData({ ...formData, position: e.target.value })
-                      }
-                      placeholder="contoh: Guru Matematika, Kepala TU"
-                      required
-                    />
-                  </Field>
                 </FieldGroup>
               </CardContent>
             </Card>

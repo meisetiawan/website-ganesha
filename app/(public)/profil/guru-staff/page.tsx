@@ -103,21 +103,26 @@ export default function GuruStaffPage() {
     person.department.toLowerCase().includes(searchTerm.toLowerCase())
   );
 
-  // Separate guru and staff based on department
-  // Guru: department contains "Guru" or "Pimpinan" or position contains "Guru"
-  // Staff: everything else (Administrasi, TU, etc.)
-  const guru = filteredStaff.filter(person => 
-    person.department === "Guru" || 
-    person.department === "Pimpinan" ||
-    person.position.toLowerCase().includes("guru") ||
-    person.position.toLowerCase().includes("kepala")
-  );
-  const staff = filteredStaff.filter(person => 
-    person.department !== "Guru" && 
-    person.department !== "Pimpinan" &&
-    !person.position.toLowerCase().includes("guru") &&
-    !person.position.toLowerCase().includes("kepala")
-  );
+  // Separate guru and staff based on department field
+  // Department format: "Kategori" or "Kategori - Bidang"
+  // Guru: department starts with "Guru" or "Pimpinan", or position contains "Guru" or "Kepala"
+  // Staff: department starts with "Staff" or doesn't match guru criteria
+  const isGuru = (person: StaffMember) => {
+    const dept = person.department.toLowerCase();
+    const pos = person.position.toLowerCase();
+    return (
+      dept.startsWith("guru") ||
+      dept.startsWith("pimpinan") ||
+      dept === "guru" ||
+      dept === "pimpinan" ||
+      pos.includes("guru") ||
+      pos.includes("kepala sekolah") ||
+      pos.includes("wakil kepala")
+    );
+  };
+  
+  const guru = filteredStaff.filter(isGuru);
+  const staff = filteredStaff.filter(person => !isGuru(person));
 
   if (loading) {
     return (
