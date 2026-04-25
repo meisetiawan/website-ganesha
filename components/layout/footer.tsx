@@ -139,10 +139,6 @@ export function Footer() {
                 <Mail className="h-4 w-4 shrink-0" />
                 <span>{settings.email}</span>
               </li>
-              <li className="flex items-center gap-3 text-sm text-white/80">
-                <Clock className="h-4 w-4 shrink-0" />
-                <span>Senin - Jumat: 07.00 - 15.00 WIB</span>
-              </li>
             </ul>
           </div>
 
@@ -166,9 +162,9 @@ export function Footer() {
             <div className="mt-6">
               <h4 className="mb-2 text-sm font-medium">Jam Operasional</h4>
               <p className="text-sm text-white/80">
-                Senin - Kamis: 07.00 - 15.00 WIB
+                Senin - Kamis: 07.00 - 15.30 WIB
               </p>
-              <p className="text-sm text-white/80">Jumat: 07.00 - 11.30 WIB</p>
+              <p className="text-sm text-white/80">Jumat: 07.00 - 14.00 WIB</p>
             </div>
           </div>
         </div>
@@ -180,7 +176,7 @@ export function Footer() {
               &copy; {currentYear} {settings.site_name}. All rights reserved.
             </p>
             <p className="text-sm text-white/60">
-              Designed with care for Indonesian education
+              Designed by Meiseti Awan
             </p>
           </div>
         </div>

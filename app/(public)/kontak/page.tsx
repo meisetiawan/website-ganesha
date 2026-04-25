@@ -21,7 +21,7 @@ const defaultSettings: SiteSettings = {
   phone: "(0281) 891234",
   email: "info@sman1purbalingga.sch.id",
   operational_hours: "Senin - Jumat: 07.00 - 15.00 WIB",
-  maps_embed_url: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3956.2654456789!2d109.3638888!3d-7.3897222!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e6559f5bae8c5c9%3A0x7c8b9c9c8c8c8c8c!2sSMAN%201%20Purbalingga!5e0!3m2!1sid!2sid!4v1234567890",
+  maps_embed_url: "https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3956.281019171089!2d109.3502213!3d-7.3872267!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x2e65584a30a657cb%3A0x2366faf85573fb0d!2sSMA%20Negeri%201%20Purbalingga!5e0!3m2!1sid!2sid!4v1710000000000",
 };
 
 export default function KontakPage() {
