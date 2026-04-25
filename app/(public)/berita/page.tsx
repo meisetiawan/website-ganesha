@@ -12,12 +12,12 @@ interface NewsItem {
   id: number;
   title: string;
   slug: string;
-  excerpt: string;
+  excerpt?: string;
   featured_image?: string;
   image_url?: string;
-  category: string;
+  category?: string;
   published_at: string;
-  view_count: number;
+  view_count?: number;
 }
 
 function formatDate(dateString: string) {
@@ -52,11 +52,13 @@ export default function BeritaPage() {
     async function fetchNews() {
       try {
         const res = await fetch("/api/news?limit=20");
-        if (res.ok) {
-          const data = await res.json();
-          if (data.data?.news && Array.isArray(data.data.news)) {
-            setNews(data.data.news);
-          }
+        const data = await res.json();
+        if (data.success && Array.isArray(data.data)) {
+          setNews(data.data);
+        } else if (data.data?.news && Array.isArray(data.data.news)) {
+          setNews(data.data.news);
+        } else {
+          setNews([]);
         }
       } catch (error) {
         console.error("Error fetching news:", error);
@@ -69,8 +71,8 @@ export default function BeritaPage() {
 
   const filteredNews = news.filter((item) => {
     const matchesSearch = item.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      item.excerpt.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesCategory = !selectedCategory || item.category.toLowerCase() === selectedCategory.toLowerCase();
+      (item.excerpt || '').toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesCategory = !selectedCategory || (item.category || '').toLowerCase() === selectedCategory.toLowerCase();
     return matchesSearch && matchesCategory;
   });
 
@@ -155,11 +157,13 @@ export default function BeritaPage() {
                     fill
                     className="object-cover transition-transform duration-500 group-hover:scale-105"
                   />
-                  <Badge
-                    className={`absolute top-3 left-3 ${getCategoryColor(item.category)}`}
-                  >
-                    {item.category}
-                  </Badge>
+                  {item.category && (
+                    <Badge
+                      className={`absolute top-3 left-3 ${getCategoryColor(item.category)}`}
+                    >
+                      {item.category}
+                    </Badge>
+                  )}
                 </div>
                 <CardContent className="p-5">
                   <div className="flex items-center gap-4 text-sm text-muted-foreground mb-3">
@@ -177,9 +181,11 @@ export default function BeritaPage() {
                       {item.title}
                     </h2>
                   </Link>
-                  <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
-                    {item.excerpt}
-                  </p>
+                  {item.excerpt && (
+                    <p className="mt-2 text-sm text-muted-foreground line-clamp-3">
+                      {item.excerpt}
+                    </p>
+                  )}
                 </CardContent>
               </Card>
             ))}
